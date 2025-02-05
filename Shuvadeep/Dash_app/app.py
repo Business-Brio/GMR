@@ -1,16 +1,20 @@
 from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
+from pages import input, gcv, blend, stack, aging
 
 # Initialize the Dash app with a dark theme
 app = Dash(__name__, external_stylesheets=[dbc.themes.SLATE])
-app.title = "Multi-Page Dash App"
+app.title = "CYMS App"
 
 # Define the navigation bar
 navbar = dbc.Navbar(
     dbc.Container([
-        dbc.NavbarBrand("GMR Kamalanga Energy Ltd.", className="ms-2"),
+        dbc.NavbarBrand([
+    html.Img(src="/assets/logo.jpg", height="40px", className="me-2"),  # Replace with your logo path
+    "CYMS | GMR Kamalanga Energy Ltd."
+    ], className="ms-2"),
         dbc.Nav([
-            dbc.NavItem(dbc.NavLink("Input", href="/cyms", active="exact")),
+            dbc.NavItem(dbc.NavLink("Input", href="/input", active="exact")),
             dbc.NavItem(dbc.NavLink("GCV", href="/gcv", active="exact")),
             dbc.NavItem(dbc.NavLink("BLEND", href="/blend", active="exact")),
             dbc.NavItem(dbc.NavLink("STACK", href="/stack", active="exact")),
@@ -20,13 +24,6 @@ navbar = dbc.Navbar(
     color="primary",
     dark=True
 )
-
-# Define the layout for each page
-def create_page_layout(page_name):
-    return html.Div([
-        html.H1(page_name, className="text-center text-light mt-5"),
-        html.P(f"Welcome to the {page_name} page!", className="text-center text-light")
-    ])
 
 # Define the app layout
 app.layout = html.Div([
@@ -42,15 +39,15 @@ app.layout = html.Div([
 )
 def display_page(pathname):
     if pathname == "/gcv":
-        return create_page_layout("GCV")
+        return gcv.layout
     elif pathname == "/blend":
-        return create_page_layout("BLEND")
+        return blend.layout
     elif pathname == "/stack":
-        return create_page_layout("STACK")
+        return stack.layout
     elif pathname == "/aging":
-        return create_page_layout("AGING")
+        return aging.layout
     # Default page
-    return create_page_layout("Input")
+    return input.layout
 
 # Run the app
 if __name__ == "__main__":
