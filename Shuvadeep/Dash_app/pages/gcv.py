@@ -31,6 +31,15 @@ layout = dbc.Container([
                 children=dcc.Graph(id="pie-chart")
             ), width=4)   # Pie chart takes 4 columns
     ]),
+    # Buttons for calculated metrics
+    dbc.Row([
+        dbc.Col(dbc.Button("Total Top Qty: ", id="total-top-qty", color="warning"), width=2),
+        dbc.Col(dbc.Button("Total Btm Qty: ", id="total-btm-qty", color="warning"), width=2),
+        dbc.Col(dbc.Button("Avg Top GCV: ", id="avg-top-gcv", color="success"), width=2),
+        dbc.Col(dbc.Button("Avg Btm GCV: ", id="avg-btm-gcv", color="success"), width=2),
+        dbc.Col(dbc.Button("Max Aging: ", id="max-aging", color="danger"), width=2),
+        dbc.Col(dbc.Button("Avg Aging: ", id="avg-aging", color="danger"), width=2),
+    ], className="mt-4"),
     # Interval component to update data every 60 seconds
     dcc.Interval(
         id="interval-update",
@@ -40,7 +49,10 @@ layout = dbc.Container([
 ], fluid=True, style={'backgroundColor': '#323635', 'padding': '10px'})
 
 @callback(
-    (Output("bar-chart", "figure"), Output("pie-chart", "figure")),
+    [Output("bar-chart", "figure"), Output("pie-chart", "figure"),
+     Output("total-top-qty", "children"), Output("total-btm-qty", "children"),
+     Output("avg-top-gcv", "children"), Output("avg-btm-gcv", "children"),
+     Output("max-aging", "children"), Output("avg-aging", "children")],
     Input("interval-update", "n_intervals")
 )
 
@@ -55,7 +67,8 @@ def update_charts(n_intervals):
     # Compute average GCV and sum of AVAILABLE QUANTITY for Top and Bottom per Pile_id
     grouped_data = data.groupby(["pile_id", "TOP/BOTTOM"]).agg({
         'gcv': 'mean',
-        'AVAILABLE QUANTITY': 'sum'  # Assuming ST QNTY represents AVAILABLE QUANTITY
+        'AVAILABLE QUANTITY': 'sum',
+        'aging': ['max', 'mean']  # Assuming ST QNTY represents AVAILABLE QUANTITY
     }).unstack(fill_value=0)
     # Drop columns where all values are NaN
     cleaned_data = grouped_data.dropna(axis=1, how='all')
@@ -66,11 +79,20 @@ def update_charts(n_intervals):
     # Drop any column that has 'nan' in its name (if misnamed)
     grouped_data = cleaned_data.loc[:, ~cleaned_data.columns.str.contains('nan', case=False, na=False)]
 
-    grouped_data.columns = ['BTM GCV', 'TOP GCV', 'BTM QTY', 'TOP QTY']
+    grouped_data.columns = ['BTM GCV', 'TOP GCV', 'BTM QTY', 'TOP QTY','BTM MAX AGING', 'TOP MAX AGING', 'BTM MEAN AGING','TOP MEAN AGING']
     grouped_data = grouped_data.reset_index()
 
     # Ensure only the required piles are present in the new order
     grouped_data = grouped_data.set_index("pile_id").reindex(required_piles, fill_value=0).reset_index()
+
+    # Total and average calculations
+    total_top_qty = grouped_data["TOP QTY"].sum()
+    total_btm_qty = grouped_data["BTM QTY"].sum()
+    avg_top_gcv = round(grouped_data["TOP GCV"].mean(), 2)
+    avg_btm_gcv = round(grouped_data["BTM GCV"].mean(), 2)
+    max_aging = max(grouped_data["BTM MAX AGING"].max(), grouped_data["TOP MAX AGING"].max())
+    min_aging = min(grouped_data["BTM MEAN AGING"].mean(), grouped_data["TOP MEAN AGING"].mean())
+    avg_aging=round(min_aging)
 
     # Create subplot figure (4x4 grid)
     bar_fig = make_subplots(rows=4, cols=4, subplot_titles=required_piles)
@@ -84,12 +106,13 @@ def update_charts(n_intervals):
         top_qty = row_data["TOP QTY"]
         btm_qty = row_data["BTM QTY"]
 
+
         bar_fig.add_trace(
             go.Bar(
                 x=["T QTY", "T GCV", "B QTY","B GCV"],
                 y=[top_qty, top_gcv_rounded, btm_qty, btm_gcv_rounded ],
                 name=row_data["pile_id"],
-                marker=dict(color=["#07b558", "#3fe86c", "#00a895", "#027064"])
+                marker=dict(color=["#cc6225", "#2a9c52", "#cc6225", "#2a9c52"])
             ),
             row=row,
             col=col,
@@ -177,11 +200,21 @@ def update_charts(n_intervals):
         height=500,
         width=400,
         showlegend=True,
+        legend=dict(  # Centered horizontally
+        y=0.6,  # Positioned between the pies
+        xanchor="center",
+        yanchor="middle",
+        bgcolor="#323635",  # Match background
+        font=dict(color="white")
+        ),
         plot_bgcolor="#323635",
         paper_bgcolor="#323635",
         font=dict(color="white")
     )
-    return bar_fig, pie_fig
+    return (bar_fig, pie_fig, 
+            f"Total Top Qty: {total_top_qty}", f"Total Btm Qty: {total_btm_qty}",
+            f"Avg Top GCV: {avg_top_gcv}", f"Avg Btm GCV: {avg_btm_gcv}",
+            f"Max Aging: {max_aging}", f"Avg Aging: {avg_aging}")
 
 
 

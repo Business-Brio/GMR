@@ -10,14 +10,14 @@ app.title = "CYMS App"
 navbar = dbc.Navbar(
     dbc.Container([
         dbc.NavbarBrand([
-    html.Img(src="/assets/logo.jpg", height="40px", className="me-2"),  # Replace with your logo path
-    "CYMS | GMR Kamalanga Energy Ltd."
+    html.Img(src="/assets/BB-transparent.png", height="40px", className="me-2"),  # Replace with your logo path
+    "CYMS | Coal Yard Management System "
     ], className="ms-2"),
         dbc.Nav([
             dbc.NavItem(dbc.NavLink("Input", href="/input", active="exact")),
             dbc.NavItem(dbc.NavLink("GCV", href="/gcv", active="exact")),
             dbc.NavItem(dbc.NavLink("BLEND", href="/blend", active="exact")),
-            dbc.NavItem(dbc.NavLink("STACK", href="/stack", active="exact")),
+            #dbc.NavItem(dbc.NavLink("STACK", href="/stack", active="exact")),
             dbc.NavItem(dbc.NavLink("AGING", href="/aging", active="exact")),
         ], className="ms-auto", navbar=True)
     ]),
