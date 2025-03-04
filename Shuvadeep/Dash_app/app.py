@@ -2,6 +2,9 @@ from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
 from pages import input, gcv, blend, stack, aging
 
+import warnings
+warnings.filterwarnings("ignore")
+
 # Initialize the Dash app with a dark theme
 app = Dash(__name__, external_stylesheets=[dbc.themes.SLATE])
 app.title = "CYMS App"
@@ -10,8 +13,8 @@ app.title = "CYMS App"
 navbar = dbc.Navbar(
     dbc.Container([
         dbc.NavbarBrand([
-    html.Img(src="/assets/BB-transparent.png", height="40px", className="me-2"),  # Replace with your logo path
-    "CYMS | Coal Yard Management System "
+    html.Img(src="/assets/logo.jpg", height="40px", className="me-2"),  # Replace with your logo path
+    "CYMS | GMR Kamalanga Energy Ltd."
     ], className="ms-2"),
         dbc.Nav([
             dbc.NavItem(dbc.NavLink("Input", href="/input", active="exact")),
